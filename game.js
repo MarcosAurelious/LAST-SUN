@@ -13,12 +13,12 @@ const IMG={},SRC=window.__ASSETS||{},FEET=window.__FEET||{};
 
 
 
-SRC.boss2='assets/asset-40.png';
-SRC.boss3='assets/asset-41.png';
-SRC.boss4='assets/asset-42.png';
-SRC.boss5='assets/asset-43.png';
-SRC.boss6='assets/asset-44.png';
-SRC.water_tile='assets/asset-45.webp';
+SRC.boss2='asset-40.png';
+SRC.boss3='asset-41.png';
+SRC.boss4='asset-42.png';
+SRC.boss5='asset-43.png';
+SRC.boss6='asset-44.png';
+SRC.water_tile='asset-45.webp';
 let loaded=0;const total=Object.keys(SRC).length;
 for(const k in SRC){const im=new Image();im.onload=im.onerror=()=>{loaded++;const ls=$('loadStatus');if(ls)ls.textContent=loaded<total?`Loading artwork ${loaded}/${total}`:'Ready. Choose your warrior.';};im.src=SRC[k];IMG[k]=im;}
 const CELL=Object.assign({itza:[192,175.5],balam:[192,175.5],soldier:[192,160],crossbow:[192,160],panther:[192,160],eagle:[192,160],jaguar:[192,160]},window.__CELLS2||{});
