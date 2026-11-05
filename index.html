@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d0a">
+<title>THE LAST SUN — V4.8 Wider View</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<div id="shell">
+ <div id="bar"><strong>☀ THE LAST SUN · V4.8</strong><div class="tools"><button id="pauseBtn" title="Pause (P)">⏸</button><button id="soundBtn" title="Sound">🔊</button><button id="touchBtn" title="Show or hide touch controls" aria-label="Toggle touch controls">✋</button><button id="fsBtn" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button></div></div>
+ <div id="frame">
+  <canvas id="game" width="960" height="540"></canvas>
+  <canvas id="portraitView" aria-label="Portrait stage view"></canvas>
+  <div id="portraitHud"><span id="pHero">ITZÁ</span><span id="pStage">STAGE 1 / 6</span><span id="pLives">♥ ♥ ♥</span></div>
+
+  <div id="cutWrap"><video id="cutVid" playsinline muted preload="auto"></video><div id="cutCap"><div id="cutTitle"></div><div id="cutText"></div></div><div id="cutDots"></div><button id="cutSkipAll">SKIP ▶▶</button><div id="cutHint">Tap / any button: next · START / Esc: skip all</div></div>
+  <div id="cover"></div><div id="rotateHint" aria-live="polite"><strong>↻ ROTATE FOR FULL-SIZE PLAY</strong><span>Landscape gives your heroes room to run and leaves space for the controls.</span><button type="button" id="portraitAnyway">PLAY IN PORTRAIT</button></div>
+ </div>
+ <div id="controlDock"><div id="touch"><button class="tbtn move-btn" id="tLeft" data-t="l" aria-label="Move left">◀</button><button class="tbtn move-btn" id="tRight" data-t="r" aria-label="Move right">▶</button><div id="stick"><div id="knob"></div></div><button class="tbtn" id="tJump" data-t="jump" aria-label="Jump" title="Jump">↑</button><button class="tbtn" id="tFire" data-t="fire">●<small>FIRE</small></button><button class="tbtn" id="tSlash" data-t="slash" aria-label="Slash attack">⚔<small>SLASH</small></button><button class="tbtn" id="tMelee" data-t="melee" aria-label="Melee attack">✊<small>MELEE</small></button></div></div>
+</div>
+<script src="asset-data.js"></script>
+<script src="animation-data.js"></script>
+
+<script src="game.js"></script>
+
+<script src="camera.js"></script>
+
+</body>
+</html>
