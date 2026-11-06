@@ -1231,8 +1231,8 @@ function drawTitleScene(){camX=(time*40)%6000;drawBackground();ctx.save();ctx.tr
 const INTRO=[{f:'01_Oath',t:'THE OATH',x:'Beneath the last sun, the brothers Itzá and Balam swore to guard their village.'},
  {f:'02_Beasts_Attack',t:'BEASTS ATTACK',x:'Then the jungle turned against them. Beasts, driven mad, poured from the trees.'},
  {f:'03_Invasion',t:'THE INVASION',x:'Behind the beasts came iron men from across the sea, burning all in their path.'},
- {f:'04_Brothers_Charge',t:'BROTHERS CHARGE',x:'Sun and Shadow. Blade and trident. The brothers charge.'}];
-const GARRISON_CUT=[{f:'Level_1_Five_Soldier_Garrison'}],ALCHEMIST_CUT=[{f:'Level_06_The_Mad_Alchemist'}];
+ {f:'04_Brothers_Charge',t:'BROTHERS CHARGE',x:'Sun and Shadow. Club and spear. The brothers charge.'}];
+const GARRISON_CUT=[{f:'Level_1_Five_Soldier_Garrison',t:'THE IRON GARRISON',x:'Five soldiers hold the village gate. Break their line, then strike the Sun-Stone.'}],ALCHEMIST_CUT=[{f:'Level_06_The_Mad_Alchemist',t:'THE MAD ALCHEMIST',x:'In his laboratory he has brewed a monster from the poisons of the jungle.'}];
 let CUTS=INTRO,garrisonSeen=false,alchSeen=false,cutIdx=-1,cutDone=null,seenIntro=false,cutT=0;
 const cutUrl=c=>'cuts/'+c.f+'.mp4';
 function playCuts(list,done,track='story'){CUTS=list;mode='cut';cutDone=done;cutIdx=-1;cover.classList.add('hidden');$('cutWrap').classList.add('on');musicTrack=track;seqStep=0;nextCut()}
