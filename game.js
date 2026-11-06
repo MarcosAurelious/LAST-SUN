@@ -1004,7 +1004,7 @@ function hero24Frame(p){
   if(p.landT>0)return 14;
   if(p.dive||p.crouch)return 10;
   if(Math.abs(p.vx)>12)return HERO24_RUN[Math.floor(p.anim)%8];
-  if(p.firing>0)return p.hero==='balam'?17:15;
+  if(p.firing>0)return 15;   // both new sheets have a real shooting pose
   return HERO24_IDLE[Math.floor(time*2.1)%2];
 }
 function drawPlayer24(p){

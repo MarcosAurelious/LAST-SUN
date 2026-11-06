@@ -10,11 +10,17 @@ H, W = A.shape[:2]; cw, ch = W / 6, H / 4
 CW, CH = 448, 384; FEET = round(0.89 * CH); IDLE_H = 0.77 * CH
 def fx(c):
     r, g, b = [c[..., i].astype(int) for i in range(3)]
-    return ((r > 220) & (g > 150) & (b < 120)) | ((b > 160) & (r > 120) & (g < 120))   # flame/flash, violet energy
+    return ((r > 220) & (g > 150) & (b < 120)) | ((b > 215) & (r > 185) & (g < 170))   # flame/flash, bright violet energy (not a darker purple cape)
 cells = []
 for i in range(24):
     y0, x0 = round((i // 6) * ch), round((i % 6) * cw)
     c = A[y0:round(y0 + ch), x0:round(x0 + cw)]
+    from scipy import ndimage   # keep the hero and anything near him; drop slivers of the neighbouring frame
+    m = c[..., 3] > 0; lab, n = ndimage.label(m, np.ones((3, 3)))
+    if n > 1:
+        sizes = ndimage.sum(m, lab, range(1, n + 1)); main = lab == (np.argmax(sizes) + 1)
+        near = ndimage.binary_dilation(main, iterations=int(0.12 * c.shape[0]))
+        keep = np.isin(lab, np.unique(lab[near & m])); c = c.copy(); c[..., 3] = np.where(keep, c[..., 3], 0)
     ys, xs = np.where(c[..., 3] > 0); c = c[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
     body = (c[..., 3] > 60) & ~fx(c); by, bx = np.where(body)
     cells.append((c, bx.mean(), by.max() + 1))
