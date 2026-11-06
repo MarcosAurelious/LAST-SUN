@@ -140,11 +140,11 @@ def beasts(t):
     grade(fr, (90, 10, 20), 0.22)
     for i in range(4):                                                     # bats sweep overhead
         x = W + 120 - ((t - i * 0.7) * 330) % (W + 260); y = 110 + 40 * math.sin(t * 3 + i) + i * 25
-        put(fr, 'bat', [4, 5, 6, 7][int(t * 12 + i) % 4], x, y + 80, 170)
+        put(fr, 'bat', [4, 5, 6, 7][int(t * 12 + i) % 4], x, y + 80, 170, flip=True)
     for name, start, h, cyc, y, sp in BEASTS:
         if t < start: continue
         x = W + 160 - (t - start) * 360 * sp
-        if -200 < x < W + 220: put(fr, name, cyc[int(t * 12 + start * 7) % len(cyc)], x, y + sy, h)
+        if -200 < x < W + 220: put(fr, name, cyc[int(t * 12 + start * 7) % len(cyc)], x, y + sy, h, flip=True)
     embers(fr, t, 18, seed=5, color=(255, 90, 60), rise=50)
     vignette(fr, 0.65); return fr
 
@@ -157,7 +157,7 @@ def invasion(t):
     for row, (scale, y0, speed) in enumerate([(190, 448, 120), (225, 478, 150)]):  # two ranks marching left
         for name, cyc, i in MARCH:
             x = W - 260 + i * 140 + row * 70 - t * speed
-            if -120 < x < W + 140: put(fr, name, cyc[int(t * 8 + i) % len(cyc)], x, y0, scale)
+            if -120 < x < W + 140: put(fr, name, cyc[int(t * 8 + i) % len(cyc)], x, y0, scale, flip=True)
     embers(fr, t, 60, seed=9, color=(255, 150, 60), rise=90)
     grade(fr, (120, 30, 10), 0.10); vignette(fr, 0.6); return fr
 
