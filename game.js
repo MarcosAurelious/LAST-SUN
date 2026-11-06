@@ -392,6 +392,7 @@ function damageEnemy(e,dmg,src){if(e.dead||e.hp<=0)return;if(e.type==='bcore'&&b
   else if(['cannon','bcannon','jaguar'].includes(e.type))boom(e.x,e.y-20,1.4);
   else if(e.type==='bcore'){bossDefeated()}
   else if(e.type==='stasis'||e.type==='minibrute'){fxStrip('fx_boom',e.x,e.y,e.type==='stasis'?200:130,.8);SFX.boom()}
+  else if(e.type==='brute'&&e.bossSprite&&stageNum!==6){spark(e.x,e.y-40,'#e8c48a',30,240);spark(e.x,e.y-70,'#ffb36b',16,200)}
   else if(e.type==='sci'||e.type==='brute'){spark(e.x,e.y-60,'#c8ff6a',30,260);fxStrip('fx_boom',e.x,e.y,220,.9);boom(e.x,e.y-60,1.5);if(boss&&boss.kind===2&&boss.sci.dead&&boss.brute&&boss.brute.dead)bossDefeated()}
   else if(['totem','arrow','pod','boulder','cauldron'].includes(e.type))boom(e.x,e.y-50,1.1)
   else if(e.type==='tank'){boom(e.x,e.y-80,1);fxStrip('fx_boom',e.x,e.y,190,.8);spark(e.x,e.y-80,'#9dff4a',30,280,4);medals.push({x:e.x,y:e.y-90,vx:-80,vy:-380,l:pick(['S','M','F','L','B']),w:30,h:26,onGround:false,taken:false,t:0})}
@@ -405,7 +406,7 @@ function updateEnemy(e,dt){
  const p=nearestPlayer(e.x,e.y-40);
  if(e.dead){e.deadT+=dt;if(['runner','rifle','cross','sniper','wallman','panther','jaguar','pike','serpent','leopard','sci','brute','minibrute'].includes(e.type)){e.vy+=GRAV*dt;e.x+=e.vx*dt;e.y+=e.vy*dt;{const g=groundAt(e.x);if(g!==null&&e.y>g&&e.vy>0&&e.y-g<40){e.y=g;e.vy=0;e.vx=0}}}
   else if(e.type==='eagle'||e.type==='bat'){e.vy+=GRAV*.6*dt;e.y+=e.vy*dt;e.x+=e.vx*dt}
-  return e.deadT>(['cannon','bcannon','totem','arrow','pod'].includes(e.type)?999:1.3)}
+  return e.deadT>(['cannon','bcannon','totem','arrow','pod'].includes(e.type)?999:e.bossSprite?3.3:1.3)}
  // Normal enemies have short, readable recoil; boss wind-ups are not chain-stunnable.
  if(e.stun>0){
    e.stun=Math.max(0,e.stun-dt);
@@ -549,7 +550,7 @@ function startChapterBoss(){
  const name=stageNum===2?'THE IRON CAPTAIN':STG.bossName;
  const typ=stageNum===4?'jaguar':stageNum===3?'brute':stageNum===5?'brute':'pike';
  boss={kind:3,t:0,dead:false,deadT:0,name,adds:3,addT:COMBAT_BALANCE[stageNum].adds};musicTrack='boss';seqStep=0;
- const e=spawn(typ,ARENA_X+W-220,430,{dir:-1,st:1.3,hp:COMBAT_BALANCE[stageNum].hp,max:COMBAT_BALANCE[stageNum].hp,bossSprite:'boss'+stageNum});
+ const bx=ARENA_X+W-220,e=spawn(typ,bx,groundAt(bx)??430,{dir:-1,st:1.3,state:typ==='brute'?'roar':'idle',hp:COMBAT_BALANCE[stageNum].hp,max:COMBAT_BALANCE[stageNum].hp,bossSprite:'boss'+stageNum});
  boss.actor=e;showBanner('BOSS ENCOUNTER',name,3);shake=8;SFX.roar();
 }
 // V4.2 — Unique, telegraphed signature attacks for bosses in chapters 2–6.
@@ -1092,7 +1093,13 @@ function drawEnemyTell(e){
  }
  ctx.restore();
 }
-function drawEnemy(e){ctx.save();if(!e.dead&&!e.bossSprite&&e.onGround&&Math.abs(e.vx||0)>22&&e.type!=='boulder'&&e.type!=='capsule')ctx.translate(0,Math.sin(e.gait*Math.PI*.5)*1.25);if(e.hurt>0&&!e.dead)ctx.translate((e.hitSide||1)*Math.sin((.22-e.hurt)*38)*3,0);if(e.garrison&&!e.dead){R(e.x-26,e.y-128,52,5,'#2a120c');R(e.x-26,e.y-128,52*e.hp/e.max,5,'#ff6a4a')}const fl=e.hurt>0;const a=e.dead?clamp(1.4-e.deadT,0,1):1;if(a<=0){ctx.restore();return}sprFlash=fl&&!e.dead;if(e.bossSprite){const f=e.dead?15:e.hurt>0?12:e.specialPhase==='wind'?8:e.specialT>0?10:e.state==='pound'||e.state==='slash'||e.state==='thrust'||e.state==='beam'?10:['poundW','wind','windDash','chargeW','beamW'].includes(e.state)||e.phase==='beamW'?8:Math.abs(e.vx)>5?[4,5,6,7][Math.floor(e.gait)%4]:Math.floor(e.anim*2)%4;spr(e.bossSprite,f,e.x+(fl?-e.dir*Math.min(4,e.hurt*22):0),e.y,stageNum===3?205:stageNum===5?194:175,e.dir<0,a);if(fl&&!e.dead){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.45;circ(e.x,e.y-95,45,'#ffcf7a');ctx.restore()}if(!e.dead){R(e.x-65,e.y-205,130,8,'#2a120c');R(e.x-64,e.y-204,128*Math.max(0,e.hp)/e.max,6,'#ff6a4a')}drawEnemyTell(e);sprFlash=false;ctx.restore();return}
+// Which of each boss sheet's 16 cells is which pose (0-3 row 1 ... 12-15 row 4).
+const BOSS_FRAMES={boss2:{idle:[0,1],walk:[2,3,4,5],wind:6,atk:[7,8],hurt:10,die:[12,13,14,15]},
+ boss3:{idle:[0,1],walk:[2,3,9,10],wind:8,atk:[5,6],pound:7,hurt:11,die:[12,13,14,15]},
+ boss4:{idle:[0,1],walk:[2,3],wind:4,atk:[5,6],special:7,hurt:12,die:[13,14,15]},
+ boss5:{idle:[0,1,2,3],walk:[4,5,6,7],wind:9,atk:[10],pound:11,hurt:12,die:[13,14,15]},
+ boss6:{idle:[0,1,2,3],walk:[4,5,6,7],wind:8,atk:[9,10],special:11,hurt:12,die:[13,14,15]}};
+function drawEnemy(e){ctx.save();if(!e.dead&&!e.bossSprite&&e.onGround&&Math.abs(e.vx||0)>22&&e.type!=='boulder'&&e.type!=='capsule')ctx.translate(0,Math.sin(e.gait*Math.PI*.5)*1.25);if(e.hurt>0&&!e.dead)ctx.translate((e.hitSide||1)*Math.sin((.22-e.hurt)*38)*3,0);if(e.garrison&&!e.dead){R(e.x-26,e.y-128,52,5,'#2a120c');R(e.x-26,e.y-128,52*e.hp/e.max,5,'#ff6a4a')}const fl=e.hurt>0;const a=e.dead?clamp((e.bossSprite?3.2:1.4)-e.deadT,0,1):1;if(a<=0){ctx.restore();return}sprFlash=fl&&!e.dead;if(e.bossSprite){const M=BOSS_FRAMES[e.bossSprite],cyc=(l,r)=>l[Math.floor(r)%l.length],atk=['pound','slash','thrust','beam','charge','dash'].includes(e.state);const f=e.dead?M.die[Math.min(M.die.length-1,Math.floor(e.deadT*6))]:e.hurt>0?M.hurt:e.specialPhase==='wind'?M.wind:e.specialT>0?(M.special??cyc(M.atk,e.anim*8)):e.state==='pound'&&M.pound!=null?M.pound:atk?cyc(M.atk,e.anim*8):['poundW','wind','windDash','chargeW','beamW'].includes(e.state)||e.phase==='beamW'?M.wind:Math.abs(e.vx)>5?cyc(M.walk,e.gait):cyc(M.idle,e.anim*2);spr(e.bossSprite,f,e.x+(fl?-e.dir*Math.min(4,e.hurt*22):0),e.y,stageNum===3?205:stageNum===5?194:175,e.dir<0,a);if(fl&&!e.dead){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.45;circ(e.x,e.y-95,45,'#ffcf7a');ctx.restore()}if(!e.dead){R(e.x-65,e.y-205,130,8,'#2a120c');R(e.x-64,e.y-204,128*Math.max(0,e.hp)/e.max,6,'#ff6a4a')}drawEnemyTell(e);sprFlash=false;ctx.restore();return}
  switch(e.type){
  case'runner':{const f=e.dead?14:e.hurt>0?12:!e.onGround?13:[2,3,4,5][Math.floor(e.gait)%4];spr('soldier',f,e.x,e.y,112,e.dir<0,a);break}
  case'rifle':case'wallman':{let f=e.dead?(e.deadT<.4?14:15):e.hurt>0?12:e.fireT>0?7:e.aimT>0?6:e.walking?[2,3,4,5][Math.floor(e.gait)%4]:(e.cd<.6?6:Math.floor(e.anim*2)%2);spr('soldier',f,e.x,e.y,112,e.dir<0,a);break}
