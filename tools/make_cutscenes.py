@@ -102,7 +102,7 @@ def flash(fr, a, color=(255, 250, 230)):
     if a > 0: grade(fr, color, min(1, a))
 
 def letterbox(fr, h=34):
-    d = ImageDraw.Draw(fr); d.rectangle([0, 0, W, h], fill=(0, 0, 0, 255)); d.rectangle([0, H - h, W, H], fill=(0, 0, 0, 255))
+    d = ImageDraw.Draw(fr); d.rectangle([0, 0, W, h], fill=(0, 0, 0, 255))   # top bar only: the floor at the bottom must stay visible
 
 def fade(fr, t, dur, fin=0.6, fout=0.7):
     a = max(0, 1 - t / fin) if t < fin else max(0, (t - (dur - fout)) / fout) if t > dur - fout else 0
@@ -121,7 +121,8 @@ def render(name, dur, draw):
     p.stdin.close(); p.wait(); print(out, os.path.getsize(out) // 1024, 'KB')
 
 HERO_H = 330      # hero cell height in cutscenes (body ~250px)
-GROUND = 470      # feet line in most shots (captions sit just below)
+GROUND = 499      # top of the stone walkway in the village/jungle backgrounds
+FLOOR_CAPITAL, FLOOR_LAB = 447, 455   # walkway tops in the burning capital and the lab
 
 # ---------- 1. THE OATH ----------
 def oath(t):
@@ -136,9 +137,9 @@ def oath(t):
     vignette(fr); return fr
 
 # ---------- 2. BEASTS ATTACK ----------
-BEASTS = [('panther', 0.0, 250, [4, 5, 6, 5], 455, 1.0), ('leopard', 0.5, 260, [4, 5, 6, 7], 470, 1.1), ('jaguar', 1.1, 320, [4, 5, 6, 7], 462, 0.9),
-          ('panther', 1.6, 250, [4, 5, 6, 5], 445, 1.15), ('leopard', 2.4, 260, [4, 5, 6, 7], 468, 1.05), ('jaguar', 3.0, 320, [4, 5, 6, 7], 460, 1.0),
-          ('panther', 3.5, 250, [4, 5, 6, 5], 455, 1.2)]
+BEASTS = [('panther', 0.0, 250, [4, 5, 6, 5], GROUND, 1.0), ('leopard', 0.5, 260, [4, 5, 6, 7], GROUND, 1.1), ('jaguar', 1.1, 320, [4, 5, 6, 7], GROUND, 0.9),
+          ('panther', 1.6, 250, [4, 5, 6, 5], GROUND, 1.15), ('leopard', 2.4, 260, [4, 5, 6, 7], GROUND, 1.05), ('jaguar', 3.0, 320, [4, 5, 6, 7], GROUND, 1.0),
+          ('panther', 3.5, 250, [4, 5, 6, 5], GROUND, 1.2)]
 def beasts(t):
     sx, sy = shake(t, 2 + t * 0.6)
     fr = pan(10, 700 + sx - t * 15, zoom=1.0)
@@ -159,7 +160,7 @@ MARCH = [('soldier', [2, 3, 4, 5], 0), ('pike', [4, 5, 6, 7], 1), ('crossbow', [
 def invasion(t):
     fr = pan(13, 120 + t * 18, zoom=1.0, y_bias=0.1)
     smoke(fr, t, 180, 300, 1.2, seed=4); smoke(fr, t, 760, 280, 1.4, seed=8)
-    for row, (scale, y0, speed) in enumerate([(190, 466, 120), (225, 482, 150)]):  # two ranks marching left
+    for row, (scale, y0, speed) in enumerate([(190, FLOOR_CAPITAL, 120), (225, FLOOR_CAPITAL + 6, 150)]):  # two ranks marching left
         for name, cyc, i in MARCH:
             x = W - 260 + i * 140 + row * 70 - t * speed
             if -120 < x < W + 140: put(fr, name, cyc[int(t * 8 + i) % len(cyc)], x, y0, scale, flip=True)
@@ -174,11 +175,11 @@ def charge(t):
     if fast:
         speedlines(fr, t, 0.5)
         put(fr, 'itza', 2 + int(t * 14) % 8, 380, GROUND, HERO_H)
-        put(fr, 'balam', 2 + int(t * 14 + 3) % 8, 560, GROUND + 6, HERO_H)
+        put(fr, 'balam', 2 + int(t * 14 + 3) % 8, 560, GROUND, HERO_H)
     else:                                                                    # the strike: fiery slash and spirit skull
         k = t - 3.6
         put(fr, 'itza', 16 if k < 0.15 else 17, 380, GROUND, HERO_H)
-        put(fr, 'balam', 16 if k < 0.15 else 18, 580, GROUND + 6, HERO_H)
+        put(fr, 'balam', 16 if k < 0.15 else 18, 580, GROUND, HERO_H)
         flash(fr, max(0, 0.9 - k * 2.5) if k > 0.15 else 0)
     vignette(fr, 0.5); return fr
 
@@ -188,7 +189,7 @@ def garrison(t):
     grade(fr, (30, 20, 40), 0.25)
     aim = t > 2.2; fire = t > 3.4
     for i, x in enumerate([180, 330, 480, 630, 780]):
-        y = 478; name = 'crossbow' if i in (1, 3) else 'soldier'
+        y = GROUND; name = 'crossbow' if i in (1, 3) else 'soldier'
         if not aim: f = [0, 1][int(t * 2 + i) % 2]
         elif name == 'soldier': f = 7 if fire and int(t * 10 + i) % 3 == 0 else 6
         else: f = 10 if fire and int(t * 10 + i) % 3 == 0 else 8
@@ -202,13 +203,13 @@ def alchemist(t):
     fr = pan(14, 1250 + sx, zoom=1.0)
     grade(fr, (10, 40, 10), 0.18)
     burst = t > 3.2
-    if not burst: put(fr, 'tank', int(t * 7) % 8, 700, 470 + sy, 340)
+    if not burst: put(fr, 'tank', int(t * 7) % 8, 700, FLOOR_LAB + sy, 340)
     else:
         glow(fr, 700, 320, 220, (150, 255, 90), max(0, 0.8 - (t - 3.2)))
-        put(fr, 'brute', 12 if t < 4.3 else [0, 1][int(t * 3) % 2], 700, 472 + sy, 320, flip=True)
-    put(fr, 'sci', 4 if 2.4 < t < 3.2 else [0, 1][int(t * 3) % 2], 330, 470 + sy, 260)
+        put(fr, 'brute', 12 if t < 4.3 else [0, 1][int(t * 3) % 2], 700, FLOOR_LAB + sy, 320, flip=True)
+    put(fr, 'sci', 4 if 2.4 < t < 3.2 else [0, 1][int(t * 3) % 2], 330, FLOOR_LAB + sy, 260)
     for i in range(18):                                                    # rising green bubbles
-        p = (t * 0.5 + i / 18) % 1; x = 640 + (i * 37) % 120; y = 430 - p * 300
+        p = (t * 0.5 + i / 18) % 1; x = 640 + (i * 37) % 120; y = FLOOR_LAB - 40 - p * 300
         ImageDraw.Draw(fr).ellipse([x, y, x + 6, y + 6], outline=(170, 255, 120, int(200 * (1 - p))), width=2)
     if burst: flash(fr, max(0, 0.9 - (t - 3.2) * 3), (200, 255, 150))
     vignette(fr, 0.6); return fr
