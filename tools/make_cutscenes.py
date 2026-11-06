@@ -36,8 +36,13 @@ def sprite(name, frame, height, flip=False):
     if flip: c = c.transpose(Image.FLIP_LEFT_RIGHT); ax = c.width - ax
     _spr[key] = (c, ax, ay); return _spr[key]
 
-def put(fr, name, frame, x, y, height, flip=False, alpha=1.0, glow=None):
+def shadow(fr, x, y, w):
+    sh = Image.new('RGBA', (int(w * 2.4), 40), (0, 0, 0, 0)); ImageDraw.Draw(sh).ellipse([0, 8, int(w * 2.4) - 1, 32], fill=(0, 0, 0, 120))
+    sh = sh.filter(ImageFilter.GaussianBlur(5)); fr.paste(sh, (int(x - w * 1.2), int(y - 20)), sh)
+
+def put(fr, name, frame, x, y, height, flip=False, alpha=1.0, glow=None, ground=True):
     im, ax, ay = sprite(name, frame, height, flip)
+    if ground and name not in ('bat', 'tank'): shadow(fr, x, y, height * 0.22)   # contact shadow so nobody hovers
     if alpha < 1: im = im.copy(); im.putalpha(im.getchannel('A').point(lambda v: int(v * alpha)))
     if glow:
         g = Image.new('RGBA', im.size, glow); g.putalpha(im.getchannel('A').filter(ImageFilter.GaussianBlur(8)))
@@ -154,7 +159,7 @@ MARCH = [('soldier', [2, 3, 4, 5], 0), ('pike', [4, 5, 6, 7], 1), ('crossbow', [
 def invasion(t):
     fr = pan(13, 120 + t * 18, zoom=1.0, y_bias=0.1)
     smoke(fr, t, 180, 300, 1.2, seed=4); smoke(fr, t, 760, 280, 1.4, seed=8)
-    for row, (scale, y0, speed) in enumerate([(190, 448, 120), (225, 478, 150)]):  # two ranks marching left
+    for row, (scale, y0, speed) in enumerate([(190, 466, 120), (225, 482, 150)]):  # two ranks marching left
         for name, cyc, i in MARCH:
             x = W - 260 + i * 140 + row * 70 - t * speed
             if -120 < x < W + 140: put(fr, name, cyc[int(t * 8 + i) % len(cyc)], x, y0, scale, flip=True)
@@ -183,7 +188,7 @@ def garrison(t):
     grade(fr, (30, 20, 40), 0.25)
     aim = t > 2.2; fire = t > 3.4
     for i, x in enumerate([180, 330, 480, 630, 780]):
-        y = 470 - (i % 2) * 12; name = 'crossbow' if i in (1, 3) else 'soldier'
+        y = 478; name = 'crossbow' if i in (1, 3) else 'soldier'
         if not aim: f = [0, 1][int(t * 2 + i) % 2]
         elif name == 'soldier': f = 7 if fire and int(t * 10 + i) % 3 == 0 else 6
         else: f = 10 if fire and int(t * 10 + i) % 3 == 0 else 8
