@@ -19,10 +19,11 @@ SRC.boss4='asset-42.png';
 SRC.boss5='asset-43.png';
 SRC.boss6='asset-44.png';
 SRC.water_tile='asset-45.webp';
+SRC.serpent_die='asset-46.webp';   // the two death poses, re-cut whole (they overhang the 4x4 grid in asset-16)
 let loaded=0;const total=Object.keys(SRC).length;
 for(const k in SRC){const im=new Image();im.onload=im.onerror=()=>{loaded++;const ls=$('loadStatus');if(ls)ls.textContent=loaded<total?`Loading artwork ${loaded}/${total}`:'Ready. Choose your warrior.';};im.src=SRC[k];IMG[k]=im;}
 const CELL=Object.assign({itza:[192,175.5],balam:[192,175.5],soldier:[192,160],crossbow:[192,160],panther:[192,160],eagle:[192,160],jaguar:[192,160]},window.__CELLS2||{});
-for(let n=2;n<=6;n++){const im=new Image();} Object.assign(CELL,{boss2:[313.5,313.5],boss3:[313.5,313.5],boss4:[313.5,313.5],boss5:[328,299.75],boss6:[328,299.75]});
+for(let n=2;n<=6;n++){const im=new Image();} Object.assign(CELL,{serpent_die:[300,192]});ANCH.serpent_die=[[0.5,0.786],[0.5,0.833]];Object.assign(CELL,{boss2:[313.5,313.5],boss3:[313.5,313.5],boss4:[313.5,313.5],boss5:[328,299.75],boss6:[328,299.75]});
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,rnd=(a=0,b=1)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)];
 const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
 function circ(x,y,r,c){ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill()}
@@ -539,13 +540,14 @@ const contactTypes=new Set(['runner','panther','eagle','jaguar','pike','bat','se
 
 // ----------------------------------------------------------- BOSS: THE IRON GATE
 function flyWave(t){const n=t==='bat'?pick([1,2,3,3]):pick([1,1,2]),y0=t==='bat'?rnd(60,140):rnd(80,130);for(let k=0;k<n;k++)spawn(t,0,0,{off:k*(t==='bat'?55:90),fy:y0+(k%2)*(t==='bat'?42:30)})}
-function startBoss(){boss={kind:1,t:0,coreShield:1,gar:[],garT:.3,spawnT:9,wallT:1,dead:false,deadT:0};musicTrack='boss';seqStep=0;
+function startBoss(){if(boss)return;boss={kind:1,t:0,coreShield:1,gar:[],garT:.3,spawnT:9,wallT:1,dead:false,deadT:0};musicTrack='boss';seqStep=0;
  showBanner('BOSS','THE FIVE-SOLDIER GARRISON',3);SFX.roar();
  boss.c1=spawn('bcannon',GATE_X+6,214,{ang:Math.PI,cd:2});boss.c2=spawn('bcannon',GATE_X+6,300,{ang:Math.PI,cd:3});
  boss.core=spawn('bcore',GATE_X+42,430,{});
  boss.w1=spawn('wallman',GATE_X+90,118,{cd:2});boss.w2=spawn('wallman',GATE_X+250,118,{cd:3})}
 
-function startChapterBoss(){
+function startChapterBoss(){if(boss)return;   // never twice: the intro cutscene and the arena trigger could both start it
+
  if(stageNum===6){startBoss2();return}
  const name=stageNum===2?'THE IRON CAPTAIN':STG.bossName;
  const typ=stageNum===4?'jaguar':stageNum===3?'brute':stageNum===5?'brute':'pike';
@@ -663,7 +665,7 @@ function update(dt){
  // camera: Contra-style forward-only scroll
  const alive=players.filter(p=>p.state==='alive');
  if(alive.length&&!boss){let lead=Math.max(...alive.map(p=>p.x)),trail=Math.min(...alive.map(p=>p.x));let target=Math.min(lead-400,trail-30);camX=clamp(Math.max(camX,camX+(Math.max(camX,target)-camX)*(1-Math.exp(-8.5*dt))),0,ARENA_X)}
- if(!boss&&camX>=ARENA_X-1){if(stageNum===1){if(!garrisonSeen&&!window.__noCut){garrisonSeen=true;ebul=[];playCuts(GARRISON_CUT,()=>{mode='play';startBoss()},'boss');return}startBoss()}else{if(!alchSeen&&!window.__noCut){alchSeen=true;ebul=[];playCuts([{f:({2:'Level_02_The_Iron_Captain',3:'Level_03_The_Cenote_Abomination',4:'Level_04_The_Feathered_Guardian',5:'Level_05_The_Siege_Warlord',6:'Level_06_The_Mad_Alchemist'})[stageNum]}],()=>{mode='play';startChapterBoss()},'boss');return}startChapterBoss()}}
+ if(!boss&&mode==='play'&&camX>=ARENA_X-1){if(stageNum===1){if(!garrisonSeen&&!window.__noCut){garrisonSeen=true;ebul=[];playCuts(GARRISON_CUT,()=>{mode='play';startBoss()},'boss');return}startBoss()}else{if(!alchSeen&&!window.__noCut){alchSeen=true;ebul=[];playCuts([{f:({2:'Level_02_The_Iron_Captain',3:'Level_03_The_Cenote_Abomination',4:'Level_04_The_Feathered_Guardian',5:'Level_05_The_Siege_Warlord',6:'Level_06_The_Mad_Alchemist'})[stageNum]}],()=>{mode='play';startChapterBoss()},'boss');return}startChapterBoss()}}
  for(let i=0;i<BOULDERS.length;i++){if(!boulderDone.has(i)&&camX>=BOULDERS[i]){boulderDone.add(i);const bx=camX+W+60;spawn('boulder',bx,groundAt(bx)??430,{});popText(camX+W-120,140,'BOULDER!','#ffb36a');shake=5;SFX.cannon()}}
  // bridge
  for(const b of BRIDGE){if(b.state===0&&players.some(p=>p.state==='alive'&&p.x>b.x-70)){b.state=1;b.t=0;boom(b.x+45,b.y-10,.9)}if(b.state===1){b.t+=dt;if(b.t>.5)b.state=2}}
@@ -1112,7 +1114,7 @@ function drawEnemy(e){ctx.save();if(!e.dead&&!e.bossSprite&&e.onGround&&Math.abs
  case'cannon':case'bcannon':drawCannon(e);break;
  case'pike':{let f;const s=e.state;if(e.dead)f=e.deadT<.3?12:15;else if(e.blockT>0)f=11;else if(s==='wind'||s==='windDash')f=8;else if(s==='thrust')f=e.st>.2?9:10;else if(s==='dash')f=14;else if(Math.abs(e.vx)>1)f=[4,5,6,7][Math.floor(e.gait)%4];else f=Math.floor(e.anim*2)%4;spr('pike',f,e.x,e.y,118,e.dir<0,a);break}
  case'bat':{let f=e.dead?(e.deadT<.5?13:15):e.hurt>0?12:e.state==='swoop'?8:[4,5,6,7][Math.floor(e.anim*10)%4];spr('bat',f,e.x,e.y+40,96,e.vx<=0,a);break}
- case'serpent':{const s=e.state;let f=e.dead?(e.deadT<.4?14:15):e.hurt>0?12:s==='spitW'?6:s==='spit'?7:s==='lunge'?(e.st>.35?9:10):[4,5][Math.floor(e.anim*2)%2];spr('serpent',f,e.x,e.y,128,e.dir<0,a);break}
+ case'serpent':{const s=e.state;if(e.dead){spr('serpent_die',e.deadT<.4?0:1,e.x,e.y,128,e.dir<0,a);break}let f=e.hurt>0?12:s==='spitW'?6:s==='spit'?7:s==='lunge'?(e.st>.35?9:10):[4,5][Math.floor(e.anim*2)%2];spr('serpent',f,e.x,e.y,128,e.dir<0,a);break}
  case'totem':{const ph=e.phase;let f=e.dead?12+Math.min(3,Math.floor(e.deadT*4)):ph==='charge'?(e.st>.35?4:5):ph==='flame'?6+Math.floor(e.anim*10)%2:ph==='smoke'?8+Math.min(3,Math.floor((.9-e.st)*4.5)):Math.floor(e.anim*3)%4;
   spr('totem',f,e.x,e.y,150,e.dir<0,1);
   if(!e.dead&&ph==='flame'){ctx.save();ctx.globalCompositeOperation='lighter';const x0=e.x+e.dir*40,x1=e.x+e.dir*215,y=e.y-75,fl=Math.sin(time*30)*5;const g=ctx.createLinearGradient(x0,0,x1,0);g.addColorStop(0,'rgba(255,240,150,.95)');g.addColorStop(.5,'rgba(255,140,40,.8)');g.addColorStop(1,'rgba(255,60,20,0)');ctx.fillStyle=g;poly([[x0,y-10],[x1,y-26-fl],[x1,y+26+fl],[x0,y+10]],g);ctx.restore()}
