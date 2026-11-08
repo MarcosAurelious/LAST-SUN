@@ -216,3 +216,31 @@ body.touch #touch{display:block!important}
 
 
 @media (orientation:portrait){#tLeft{order:1}#tRight{order:2}#tFire{order:3}#tSlash{order:4}#tMelee{order:5}#tJump{order:6}}
+
+
+/* V4.9 Full window: the stage stays 16:9 (nothing is cropped or stretched) and the space
+   around it is filled with a blurred glow of the live scene, framed in sun-gold. */
+#ambient{display:none}
+@media (orientation:landscape){
+  #frame{container-type:size;background:#0b0704!important}
+  #ambient{display:block;position:absolute!important;inset:-12%!important;width:124%!important;height:124%!important;z-index:0;
+    filter:blur(24px) brightness(.68) saturate(1.3);pointer-events:none}
+  #frame::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(ellipse at center,transparent 45%,#0b0704b0 100%)}
+  #game{inset:0!important;margin:auto!important;z-index:2;
+    width:min(100cqw,calc(100cqh * 16 / 9))!important;height:min(100cqh,calc(100cqw * 9 / 16))!important;
+    box-shadow:0 0 0 1px #c8913f,0 0 22px #ffb54a55,0 0 60px #ff8a2a2a}
+}
+
+/* V4.9 Return to the author page: a sun-gold tablet in the top bar, so it never sits over the game. */
+#authorBtn{display:inline-flex;align-items:center;gap:6px;height:25px;padding:0 12px;margin:0 8px;border-radius:13px;flex:0 1 auto;min-width:0;overflow:hidden;
+  text-decoration:none;white-space:nowrap;font:900 11px "Trebuchet MS",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#2a1405;
+  background:linear-gradient(#ffd785,#c8782e);border:1px solid #ffe7b0;box-shadow:0 2px #6a3a14,0 0 12px #ff9a3a55;animation:sunGlow 2.8s ease-in-out infinite;pointer-events:auto}
+#authorBtn i{font-style:normal;display:inline-block;animation:sunSpin 9s linear infinite}
+#authorBtn:hover,#authorBtn:focus-visible{filter:brightness(1.12);outline:2px solid #8ff0bc;outline-offset:2px}
+#authorBtn .short{display:none}
+@keyframes sunGlow{50%{box-shadow:0 2px #6a3a14,0 0 22px #ffb54acc}}
+@keyframes sunSpin{to{transform:rotate(360deg)}}
+@media (max-width:760px){#authorBtn .full{display:none}#authorBtn .short{display:inline}#authorBtn{padding:0 9px;margin:0 4px;font-size:10px;letter-spacing:.04em}}
+@media (max-width:420px){#authorBtn i{display:none}#authorBtn{flex-shrink:0;padding:0 8px;margin:0 3px}#bar strong{font-size:9.5px!important;min-width:0;overflow:hidden;text-overflow:ellipsis}}
+@media (prefers-reduced-motion:reduce){#authorBtn,#authorBtn i{animation:none}}

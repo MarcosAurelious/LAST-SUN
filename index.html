@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0d0a">
 <title>THE LAST SUN — V4.8 Wider View</title>
-<link rel="stylesheet" href="game.css">
+<link rel="stylesheet" href="game.css?v=4.9">
 </head>
 <body>
 <div id="shell">
- <div id="bar"><strong>☀ THE LAST SUN · V4.8</strong><div class="tools"><button id="pauseBtn" title="Pause (P)">⏸</button><button id="soundBtn" title="Sound">🔊</button><button id="touchBtn" title="Show or hide touch controls" aria-label="Toggle touch controls">✋</button><button id="fsBtn" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button></div></div>
+ <div id="bar"><strong>☀ THE LAST SUN · V4.8</strong><a id="authorBtn" href="https://marcosaurelious.github.io/marcos-garcia-author/#apps"><span aria-hidden="true">←</span><i aria-hidden="true">☀</i><span class="full">Return to Marcos Garcia's author page</span><span class="short">Author page</span></a><div class="tools"><button id="pauseBtn" title="Pause (P)">⏸</button><button id="soundBtn" title="Sound">🔊</button><button id="touchBtn" title="Show or hide touch controls" aria-label="Toggle touch controls">✋</button><button id="fsBtn" title="Fullscreen" aria-label="Toggle fullscreen">⛶</button></div></div>
  <div id="frame">
+  <canvas id="ambient" width="64" height="36" aria-hidden="true"></canvas>
   <canvas id="game" width="960" height="540"></canvas>
   <canvas id="portraitView" aria-label="Portrait stage view"></canvas>
   <div id="portraitHud"><span id="pHero">ITZÁ</span><span id="pStage">STAGE 1 / 6</span><span id="pLives">♥ ♥ ♥</span></div>
@@ -26,6 +27,7 @@
 <script src="game.js"></script>
 
 <script src="camera.js"></script>
+<script src="ambient.js"></script>
 
 </body>
 </html>
