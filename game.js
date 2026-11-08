@@ -1200,6 +1200,8 @@ function drawForeground(){
 }
 function medalIcon(x,y,c){poly([[x-5,y],[x-11,y-4],[x-7,y+3]],'#ffb640');poly([[x+5,y],[x+11,y-4],[x+7,y+3]],'#ffb640');circ(x,y,5,c)}
 function hud(){
+ // V4.9: on wide screens the stage is cropped to fill the window; draw the HUD inside the visible band.
+ const VIEW=window.__view||{top:0,h:H};ctx.save();ctx.translate(0,VIEW.top);
  R(0,0,W,94,'#00000045');for(const p of players){const right=p.i===1,x=right?W-18:18,al=right?'right':'left',h=HERO[p.hero];
   text(`${numPlayers===2?'P'+(p.i+1)+' ':''}${h.name}`,x,20,14,h.col,al);
   const lv=Math.min(p.lives,10);for(let i=0;i<lv;i++)medalIcon(right?x-8-i*20:x+8+i*20,40,h.col);if(p.lives>10)text('×'+p.lives,right?x-215:x+215,40,12,'#fff',al);
@@ -1215,7 +1217,8 @@ function hud(){
  if(boss&&boss.kind===1&&!boss.dead&&boss.core&&boss.coreShield){text(`GARRISON  ${boss.garDead||0} / 5`,W/2,54,12,'#ff9a7a','center');R(W/2-150,64,300,8,'#2a120c');R(W/2-149,65,298*(1-(boss.garDead||0)/5),6,'#e0b264')}
  else if(boss&&boss.kind===1&&!boss.dead&&boss.core){const c=boss.core;text('THE IRON GATE',W/2,54,12,'#ff9a7a','center');R(W/2-150,64,300,8,'#2a120c');R(W/2-149,65,298*c.hp/c.max,6,'#ff6a4a')}
  if(banner){const k=banner.t/banner.max,a=clamp(Math.min(k*4,(1-k)*6),0,1),bw=420,bx=(W-bw)/2,by=6;ctx.globalAlpha=a;R(bx,by,bw,42,'#000000b8');R(bx,by,bw,2,'#e0b264');R(bx,by+40,bw,2,'#e0b264');text(banner.a,W/2,22,18,'#ffd785','center');text(banner.b,W/2,39,11,'#dcefd0','center');ctx.globalAlpha=1}
- if(mode==='pause'){R(0,0,W,H,'#000a');text('PAUSED',W/2,H/2-10,40,'#ffd785','center');text('Press P / Enter / START to resume',W/2,H/2+30,14,'#cde','center')}
+ ctx.restore();
+ if(mode==='pause'){R(0,0,W,H,'#000a');const cy=VIEW.top+VIEW.h/2;text('PAUSED',W/2,cy-10,40,'#ffd785','center');text('Press P / Enter / START to resume',W/2,cy+30,14,'#cde','center')}
 }
 function draw(){ctx.save();if(shake>0)ctx.translate(rnd(-shake,shake),rnd(-shake,shake));
  drawBackground();drawCinematicAtmosphere();ctx.save();ctx.translate(-camX,0);
