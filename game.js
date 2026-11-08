@@ -1340,6 +1340,15 @@ $('pauseBtn').onclick=()=>{if(mode==='play'||mode==='pause')togglePause()};
 $('soundBtn').onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?'🔊':'🔇';if(soundOn)audio()};
 $('fsBtn').onclick=()=>{const f=$('shell');const active=document.fullscreenElement||document.webkitFullscreenElement;if(active){const out=document.exitFullscreen||document.webkitExitFullscreen;if(out)try{out.call(document)}catch(e){};return}const enter=f.requestFullscreen||f.webkitRequestFullscreen;if(enter){try{const p=enter.call(f);if(p&&p.then)p.then(()=>{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}).catch(()=>{})}catch(e){}}};
 
+// V4.9 Always full screen: browsers only allow full screen after a tap or key press, so the game
+// goes full screen on the first one, and again on the next one if the player leaves it.
+(()=>{const f=$('shell'),btn=$('fsBtn');if(btn)btn.style.display='none';
+ const isFs=()=>!!(document.fullscreenElement||document.webkitFullscreenElement);
+ const enter=f.requestFullscreen||f.webkitRequestFullscreen;if(!enter)return;
+ const go=e=>{if(isFs()||(e.target&&e.target.closest&&e.target.closest('a')))return;
+  try{const p=enter.call(f);if(p&&p.then)p.then(()=>{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(()=>{})}).catch(()=>{})}catch(err){}};
+ addEventListener('pointerup',go,true);addEventListener('keyup',e=>{if(e.code!=='Escape')go(e)},true)})();
+
 // ----------------------------------------------------------- LOOP
 let last=0;
 function frame(now){const dt=Math.min(.05,Math.max(0,(now-last)/1000||0));last=now;if(mode==='cut')cutT+=dt;if(mode!=='play'){pollPads();setupTick()}ctx.setTransform(SC,0,0,SC,0,0);
